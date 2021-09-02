@@ -97,7 +97,7 @@ def build_model(data, verbose=True):
         X[i][29] = train_example['actifsImmobilises']/train_example['ca']
         X[i][30] = train_example['chargesPersonnel']/train_example['ca']
         X[i][31] = (train_example['moyenneCreances']*360)/train_example['ca']
-        X[i][32] = (train_example['moyenneStocks']*360)/train_example['achatsConsommes']
+        X[i][32] = (train_example['moyenneStocks']*360)/train_example['ca']
         X[i][33] = (train_example['moyenneDettesFournisseurs']*360)/train_example['achatsTTC']
         X[i][34] = train_example['fondsRoulement']/train_example['ca']
         ylist.append(int(train_example['y']))
@@ -175,11 +175,11 @@ def build_model(data, verbose=True):
         print('\t'+ str(nullKurtosis))
     
     ## II.3) Test de Normalité de Shapiro Wilk
-    valuesNormalite = list()
+    normaliteValues = list()
 
     for j in range(nRatios):
         stat, p = shapiro(getRatio(j, X))
-        valuesNormalite.append({"stat": stat,"p_value":p})
+        normaliteValues.append({"stat": stat,"p_value":p})
         if(verbose):
             print('R' + str(j+1) + ' :','stat=%.3f, p=%.3f' % (stat, p))
             if p > 0.05:
@@ -187,7 +187,7 @@ def build_model(data, verbose=True):
             else:
                 print('\tProbablement non Gaussienne')
     
-    myModel['normalite'] = valuesNormalite
+    myModel['normalite'] = normaliteValues
 
     ## II.4) Test de correlation de Pearson (Test de corrélation linéaire)
     ratiosList = list(range(nRatios))
@@ -232,6 +232,7 @@ def build_model(data, verbose=True):
     #         X_noLC[i][j] = X[i][grp[0]]
     #         j+=1
 
+
     # Analysis of Variance Test
     def getRatioByClass(index, X_data, y):
         n0 = len(X_data)
@@ -245,9 +246,11 @@ def build_model(data, verbose=True):
         return(class0,class1)
 
     indexSelect = list()
+    fischerValues = list()
     for i in range(nRatios):
         classes = getRatioByClass(i, X, y)
         stat, p = f_oneway(classes[0], classes[1])
+        fischerValues.append({"stat": stat,"p_value":p})
         #stat1, p1 = ttest_ind(classes[0], classes[1])
         if(verbose):
             print('R'+str(i+1)+' stat=%.3f, p=%.3f' % (stat, p))
@@ -262,7 +265,8 @@ def build_model(data, verbose=True):
     if(verbose):
         print('Liste des ratios sélectionnés')
         print(indexSelect)
-
+    
+    myModel['fischer'] = fischerValues
     myModel['selection'] = indexSelect
 
     ##Récupération des ratios sélectionnés dans une matrice
