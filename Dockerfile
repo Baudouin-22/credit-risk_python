@@ -13,9 +13,6 @@ COPY requirements.txt /code/
 EXPOSE 8000
 RUN pip install -r requirements.txt
 COPY . /code/
-COPY ./services/services_container.py /code/services/services.py
-COPY ./nano_credit_api/settings_container.py /code/nano_credit_api/settings.py
-COPY ./.envcontainer /code/.env
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
 
 
